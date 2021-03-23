@@ -8,65 +8,100 @@ import {
   Platform,
   TouchableWithoutFeedback,
   SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { styles } from "./style";
 import { Feather } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as ImagePicker from "expo-image-picker";
 import ImageSlider from "./components/ImageSlider";
+import * as Permissions from "expo-permissions";
+
+
 
 const GallaryComponent = () => {
   const [images, setimages] = useState([]);
   const [selectEnabled, setselectEnabled] = useState(false);
-  const [openImageSlider, setopenImageSlider] = useState(true);
+  const [openImageSlider, setopenImageSlider] = useState(false);
+  const [permissionGranted, setpermissionGranted] = useState(null);
+  const [camerapermissionGranted, setcamerapermissionGranted] = useState(null);
 
   useEffect(() => {
     (async () => {
       if (Platform.OS !== "web") {
-        const {
-          status,
-        } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
-        }
+        askImagePickerPermission();
       }
     })();
   }, []);
+  const askImagePickerPermission = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      alert("Sorry, we need camera roll permissions to make this work!");
+      setpermissionGranted(false);
+    } else {
+      setpermissionGranted(true);
+    }
+
+    const camerapermission = await Permissions.getAsync(Permissions.CAMERA);
+    console.log("camerapermission", camerapermission);
+
+    if (camerapermission.status !== "granted") {
+      const newPermission = await Permissions.askAsync(Permissions.CAMERA);
+      console.log("newPermission", newPermission);
+
+      if (newPermission.status === "granted") {
+        setcamerapermissionGranted(true);
+      }
+    } else {
+      setcamerapermissionGranted(true);
+    }
+  };
 
   const pickImage = async () => {
+    if (!permissionGranted) {
+      askImagePickerPermission();
+      return;
+    }
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
+    console.log(result);
 
     if (!result.cancelled) {
-      setimages([
-        ...images,
-        { id: images.length + 1, selected: false, image: result.uri },
-      ]);
-      console.log(images);
+      addImage(result);
     }
   };
 
   const clickImage = async () => {
+    if (!camerapermissionGranted) {
+      askImagePickerPermission();
+      return;
+    }
     let result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.cancelled) {
-      setimages([
-        ...images,
-        { id: images.length + 1, selected: false, image: result.uri },
-      ]);
-      console.log(images);
+      addImage(result);
     }
+  };
+
+  const addImage = (result) => {
+    let id = images.length ? images[images.length - 1].id + 1 : 1;
+    setimages([
+      ...images,
+      {
+        id: id,
+        selected: false,
+        image: result.uri,
+        url: result.uri,
+      },
+    ]);
   };
 
   const handleLongPress = (item) => {
@@ -92,13 +127,25 @@ const GallaryComponent = () => {
     let imgs = images.filter((i) => !i.selected);
     setimages(imgs);
   };
+  const handleSingleDelete = (selectedIndex) => {
+    let imgs = images.filter((i, index) => index !== selectedIndex);
+    setimages(imgs);
+  };
 
-  const handleMultiShare = async () => {
+  const handleSingleShare = async (selectedIndex) => {
     if (!(await Sharing.isAvailableAsync())) {
       alert(`Uh oh, sharing isn't available on your platform`);
       return;
     }
-    await Sharing.shareAsync([images[0].image]);
+    console.log(selectedIndex);
+    await Sharing.shareAsync(images[selectedIndex].image);
+  };
+  const handleMultiShare = async () => {
+    // if (!(await Sharing.isAvailableAsync())) {
+    //   alert(`Uh oh, sharing isn't available on your platform`);
+    //   return;
+    // }
+    // await Sharing.shareAsync([images[0].image]);
   };
 
   const handleDeselect = () => {
@@ -109,12 +156,13 @@ const GallaryComponent = () => {
     setimages(imgs);
     setselectEnabled(false);
   };
+  const paddingTop = Platform.OS === "android" ? StatusBar.currentHeight : 0;
 
   const renderItem = ({ item }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.6}
-        style={styles.gallaryImgContainer}
+        style={[styles.gallaryImgContainer]}
         onLongPress={() => handleLongPress(item)}
         onPress={() => {
           handleOnPress(item);
@@ -145,7 +193,7 @@ const GallaryComponent = () => {
   };
 
   return (
-    <SafeAreaView style={styles.flexOne}>
+    <SafeAreaView style={[styles.flexOne]}>
       <View style={[styles.row, styles.spaceBetween, styles.statusBar]}>
         <Text style={[styles.bold, styles.statusBarTitle]}>Home</Text>
         {!selectEnabled && (
@@ -212,10 +260,13 @@ const GallaryComponent = () => {
         </View>
       </TouchableWithoutFeedback>
 
-      {openImageSlider && (
+      {openImageSlider && images.length > 0 && (
         <ImageSlider
           isVisible={openImageSlider}
           hideModal={() => setopenImageSlider(false)}
+          handleSingleDelete={handleSingleDelete}
+          handleSingleShare={handleSingleShare}
+          images={images}
         />
       )}
     </SafeAreaView>

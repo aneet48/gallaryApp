@@ -4,8 +4,8 @@ const gridWidth = width / 2 - 20;
 
 export const styles = StyleSheet.create({
   // general
-  flexOne:{
-    flex:1
+  flexOne: {
+    flex: 1,
   },
   row: {
     flexDirection: "row",
@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
   // status bar
   statusBar: {
     paddingHorizontal: 15,
-    paddingTop:30,
+    paddingTop: 30,
     paddingBottom: 15,
     backgroundColor: "black",
   },
@@ -38,8 +38,9 @@ export const styles = StyleSheet.create({
     backgroundColor: "#393939",
   },
   gallaryColumnContainer: {
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
     marginVertical: 5,
+    marginHorizontal:10
   },
   gallaryImgContainer: {
     borderRadius: 10,
@@ -86,6 +87,15 @@ export const styles = StyleSheet.create({
   },
   modalView: {
     height: "100%",
-    backgroundColor: "white",
+    backgroundColor: "black",
+  },
+  backIcon: {
+    color: "white",
+  },
+  sliderStatusBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: 20,
+    marginVertical: 10,
   },
 });
