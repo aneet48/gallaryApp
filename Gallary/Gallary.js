@@ -22,6 +22,7 @@ import * as Permissions from "expo-permissions";
 const GallaryComponent = () => {
   const [images, setimages] = useState([]);
   const [selectEnabled, setselectEnabled] = useState(false);
+  const [selectedIndex, setselectedIndex] = useState(0);
   const [openImageSlider, setopenImageSlider] = useState(false);
   const [permissionGranted, setpermissionGranted] = useState(null);
   const [camerapermissionGranted, setcamerapermissionGranted] = useState(null);
@@ -109,8 +110,9 @@ const GallaryComponent = () => {
       setselectEnabled(true);
     }
   };
-  const handleOnPress = (item) => {
+  const handleOnPress = (item,index) => {
     if (!selectEnabled) {
+      setselectedIndex(index)
       setopenImageSlider(true);
       return;
     }
@@ -158,14 +160,14 @@ const GallaryComponent = () => {
   };
   const paddingTop = Platform.OS === "android" ? StatusBar.currentHeight : 0;
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item ,index}) => {
     return (
       <TouchableOpacity
         activeOpacity={0.6}
         style={[styles.gallaryImgContainer]}
         onLongPress={() => handleLongPress(item)}
         onPress={() => {
-          handleOnPress(item);
+          handleOnPress(item,index);
         }}
       >
         <Image style={styles.gallaryImg} source={{ uri: item.image }} />
@@ -267,6 +269,7 @@ const GallaryComponent = () => {
           handleSingleDelete={handleSingleDelete}
           handleSingleShare={handleSingleShare}
           images={images}
+          selectedIndex={selectedIndex}
         />
       )}
     </SafeAreaView>

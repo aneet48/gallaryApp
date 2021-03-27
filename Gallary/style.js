@@ -40,7 +40,7 @@ export const styles = StyleSheet.create({
   gallaryColumnContainer: {
     justifyContent: "space-between",
     marginVertical: 5,
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
   gallaryImgContainer: {
     borderRadius: 10,
@@ -88,6 +88,12 @@ export const styles = StyleSheet.create({
   modalView: {
     height: "100%",
     backgroundColor: "black",
+  },
+  statusBarContainer: {
+    position: "absolute",
+    backgroundColor:'black',
+    zIndex:999,
+    width:'100%'
   },
   backIcon: {
     color: "white",

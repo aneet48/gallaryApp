@@ -4,11 +4,12 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 import { styles } from "../style";
 import { Feather } from "@expo/vector-icons";
+import { SimpleAnimation } from "react-native-simple-animations";
 
 const ImageSlider = ({
   isVisible,
@@ -16,10 +17,11 @@ const ImageSlider = ({
   handleSingleDelete,
   handleSingleShare,
   images = [],
+  selectedIndex = 0,
 }) => {
   const [imgs, setimgs] = useState([]);
   const [showStatusBar, setshowStatusBar] = useState(true);
-  const [currentIndex, setcurrentIndex] = useState(0);
+  const [currentIndex, setcurrentIndex] = useState(selectedIndex);
   useEffect(() => {
     if (images.length) {
       let newImgs = images.map((item) => {
@@ -29,12 +31,13 @@ const ImageSlider = ({
       });
       setimgs(newImgs);
     }
-  }, [images]);
+    setcurrentIndex(selectedIndex);
+  }, [images, selectedIndex]);
 
-  const onHideModal=()=>{
-    setshowStatusBar(true)
-    hideModal()
-  }
+  const onHideModal = () => {
+    setshowStatusBar(true);
+    hideModal();
+  };
 
   const StatusBarImage = () => {
     return (
@@ -96,22 +99,34 @@ const ImageSlider = ({
               setshowStatusBar(!showStatusBar);
             }}
           >
-            {showStatusBar && <StatusBarImage />}
+            {showStatusBar && (
+              <SimpleAnimation
+                delay={500}
+                duration={1000}
+                fade
+                direction="down"
+                style={styles.statusBarContainer}
+              >
+                <StatusBarImage />
+              </SimpleAnimation>
+            )}
             {imgs.length > 0 && (
               <ImageViewer
+                index={currentIndex}
+                renderIndicator={() => {}}
                 onClick={() => {
                   setshowStatusBar(!showStatusBar);
                 }}
                 loadingRender={() => (
-                    <ActivityIndicator
-                      color={"#FFA800"}
-                      size="large"
-                      style={{
-                        height: Dimensions.get("window").height,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    />
+                  <ActivityIndicator
+                    color={"#FFA800"}
+                    size="large"
+                    style={{
+                      height: Dimensions.get("window").height,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  />
                 )}
                 imageUrls={imgs}
                 saveToLocalByLongPress={false}
